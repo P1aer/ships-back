@@ -87,9 +87,10 @@ io.on("connection", (socket)=> {
         }
         socket.join(roomId);
         room['users'].add(socket.id);
+
         room.readyState[socket.id] = false
         const users = [...room["users"].values()];
-        socket.to(roomId).emit("ROOM:JOINED",room.readyState);
+        io.to(roomId).emit("ROOM:JOINED",room.readyState,socket.id);
     })
 
     socket.on("GAME:TURN",(roomId) => {
@@ -111,15 +112,13 @@ io.on("connection", (socket)=> {
         }
         delete room.readyState[socket.id]
         const users = [...room["users"].values()];
-        socket.to(roomId).emit("ROOM:LEAVED",room.readyState);
+        socket.to(roomId).emit("ROOM:LEAVED",room.readyState,socket.id);
     })
 
     socket.on('ROOM:STATE',(roomId, state) => {
-/*        console.log(roomId)
-        console.log(rooms)*/
         const room = rooms.get(roomId)
         room.readyState[socket.id] = state
-        socket.to(roomId).emit("ROOM:STATE",room.readyState);
+        io.to(roomId).emit("ROOM:STATE",room.readyState);
     })
 
     socket.on("disconnect",() => {
@@ -133,7 +132,7 @@ io.on("connection", (socket)=> {
             }
             delete obj.readyState[socket.id]
             const users = [...obj["users"].values()];
-            socket.to(roomId).emit("ROOM:LEAVED",obj.readyState);
+            io.to(roomId).emit("ROOM:LEAVED",obj.readyState,socket.id);
         })
     })
 })
